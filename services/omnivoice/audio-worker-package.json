@@ -1,0 +1,12 @@
+{
+  "name": "splitaudio-worker",
+  "version": "1.0.0",
+  "description": "Audio generation worker using Silero TTS and Supabase",
+  "main": "audio-worker.js",
+  "scripts": {
+    "start": "node audio-worker.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}

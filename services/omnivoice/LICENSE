@@ -1,0 +1,82 @@
+OmniVoice Studio — Dual License
+
+Copyright (c) 2024-present Palash Debnath and contributors.
+
+This software is licensed under a dual-license model:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. PERSONAL & NON-COMMERCIAL USE — FREE
+
+You may use, copy, modify, and distribute this software free of
+charge for any personal, educational, research, or non-commercial
+purpose, subject to the following conditions:
+
+  • You include this license notice in all copies or substantial
+    portions of the software.
+  • You do not use the software, or any derivative of it, to provide
+    a commercial product or service (see Section 2).
+  • You provide attribution to "OmniVoice Studio" in any public-facing
+    derivative work.
+
+"Non-commercial" means use that is not intended for or directed toward
+commercial advantage or monetary compensation. This includes personal
+projects, academic research, open-source contributions, and internal
+evaluation within an organization (up to 30 days).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+2. COMMERCIAL USE — PAID LICENSE REQUIRED
+
+A separate commercial license is required for any use that does not
+qualify as personal or non-commercial under Section 1. This includes,
+but is not limited to:
+
+  • Using the software to provide a paid product or service.
+  • Embedding the software in a product sold or licensed to third
+    parties.
+  • Using the software in a revenue-generating business beyond the
+    30-day evaluation period.
+  • Offering the software as part of a managed, hosted, or SaaS
+    platform.
+
+To obtain a commercial license, contact:
+
+  Email: OmniVoice@palash.dev
+  Web:   https://github.com/debpalash/OmniVoice-Studio
+
+Commercial licenses are available for teams and enterprises of all
+sizes. Pricing scales with usage — solo creators and small studios
+are priced affordably.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3. CONTRIBUTIONS
+
+By submitting a pull request or other contribution to this project,
+you agree to license your contribution under the same dual-license
+terms described herein, and you grant the copyright holder a
+perpetual, worldwide, royalty-free license to use, reproduce, modify,
+and distribute your contribution under both the non-commercial and
+commercial licenses.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+4. NO WARRANTY
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+5. TERMINATION
+
+Your rights under this license terminate automatically if you fail to
+comply with its terms. Upon termination, you must cease all use of the
+software and destroy all copies in your possession.

@@ -1,0 +1,220 @@
+/**
+ * First-run bootstrap splash.
+ *
+ * Two data sources drive this UI:
+ *   1. `bootstrap_status` Tauri command (polled every 1 s) — coarse stage.
+ *   2. `bootstrap-log` + `bootstrap-progress` Tauri events — live stdout
+ *      from `uv sync`, ffmpeg byte counts, etc. The log panel shows the
+ *      last N lines so users can see *something* happening during the 5–10
+ *      min dependency install.
+ */
+import { useEffect, useRef, useState } from 'react';
+import './BootstrapSplash.css';
+
+const STAGE_LABEL = {
+  checking:           'Checking environment…',
+  downloading_uv:     'Downloading uv (Python package manager)…',
+  creating_venv:      'Creating Python virtual environment…',
+  installing_deps:    'Installing dependencies — first run, 5–10 min.',
+  downloading_ffmpeg: 'Downloading ffmpeg…',
+  starting_backend:   'Starting backend…',
+  ready:              'Ready',
+  failed:             'Setup failed',
+};
+
+const STEPS = [
+  'checking',
+  'downloading_uv',
+  'creating_venv',
+  'installing_deps',
+  'downloading_ffmpeg',
+  'starting_backend',
+];
+
+const MAX_LOG_LINES = 200;
+
+function formatBytes(n) {
+  if (!n || n < 0) return '';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let i = 0;
+  let v = n;
+  while (v >= 1024 && i < units.length - 1) { v /= 1024; i += 1; }
+  return `${v.toFixed(v < 10 ? 1 : 0)} ${units[i]}`;
+}
+
+export function BootstrapSplash({ stage, message }) {
+  const label = STAGE_LABEL[stage] || stage;
+  const stepIndex = Math.max(0, STEPS.indexOf(stage));
+  const isFailed = stage === 'failed';
+  const [logs, setLogs] = useState([]);
+  const [logsOpen, setLogsOpen] = useState(false);
+  const [progress, setProgress] = useState(null); // { stage, bytes_done, bytes_total, percent }
+  const logRef = useRef(null);
+
+  // Subscribe to live log + progress events from the Rust bootstrap.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!('__TAURI_INTERNALS__' in window)) return;
+    let unlistenLog = null;
+    let unlistenProgress = null;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const { listen } = await import('@tauri-apps/api/event');
+        if (cancelled) return;
+        unlistenLog = await listen('bootstrap-log', (e) => {
+          const { stage: s, line } = e.payload || {};
+          if (!line) return;
+          setLogs((prev) => {
+            const next = prev.concat([{ stage: s, line, t: Date.now() }]);
+            return next.length > MAX_LOG_LINES
+              ? next.slice(next.length - MAX_LOG_LINES)
+              : next;
+          });
+        });
+        unlistenProgress = await listen('bootstrap-progress', (e) => {
+          setProgress(e.payload || null);
+        });
+      } catch {
+        /* not in Tauri or listen unavailable — silent */
+      }
+    })();
+    return () => {
+      cancelled = true;
+      if (unlistenLog) unlistenLog();
+      if (unlistenProgress) unlistenProgress();
+    };
+  }, []);
+
+  // Auto-scroll the log panel to the latest line whenever it opens or
+  // new lines arrive.
+  useEffect(() => {
+    if (logsOpen && logRef.current) {
+      logRef.current.scrollTop = logRef.current.scrollHeight;
+    }
+  }, [logs, logsOpen]);
+
+  const stageProgress = progress && progress.stage === stage ? progress : null;
+  const pctFromBytes = stageProgress?.percent != null ? stageProgress.percent : null;
+
+  return (
+    <div className="bootstrap-splash">
+      <div className="bootstrap-splash__card">
+        <h1>OmniVoice Studio</h1>
+        <p className="bootstrap-splash__status">{label}</p>
+        {isFailed ? (
+          <pre className="bootstrap-splash__error">{message || 'Unknown error'}</pre>
+        ) : (
+          <>
+            <div className="bootstrap-splash__bar">
+              <div
+                className="bootstrap-splash__bar-fill"
+                style={{ width: `${((stepIndex + 1) / STEPS.length) * 100}%` }}
+              />
+            </div>
+            {stageProgress && (
+              <div className="bootstrap-splash__sub-progress">
+                <div className="bootstrap-splash__sub-bar">
+                  <div
+                    className="bootstrap-splash__sub-bar-fill"
+                    style={{ width: `${pctFromBytes ?? 0}%` }}
+                  />
+                </div>
+                <span className="bootstrap-splash__sub-label">
+                  {formatBytes(stageProgress.bytes_done)}
+                  {stageProgress.bytes_total > 0
+                    ? ` / ${formatBytes(stageProgress.bytes_total)}`
+                    : ''}
+                  {pctFromBytes != null ? ` (${pctFromBytes}%)` : ''}
+                </span>
+              </div>
+            )}
+            <ol className="bootstrap-splash__steps">
+              {STEPS.map((s, i) => (
+                <li
+                  key={s}
+                  className={
+                    i < stepIndex ? 'done' :
+                    i === stepIndex ? 'active' :
+                    'pending'
+                  }
+                >
+                  {STAGE_LABEL[s]}
+                </li>
+              ))}
+            </ol>
+          </>
+        )}
+        <button
+          type="button"
+          className="bootstrap-splash__log-toggle"
+          onClick={() => setLogsOpen((v) => !v)}
+        >
+          {logsOpen ? '▾ Hide logs' : '▸ Show logs'}
+          {logs.length > 0 && (
+            <span className="bootstrap-splash__log-count"> ({logs.length})</span>
+          )}
+        </button>
+        {logsOpen && (
+          <pre className="bootstrap-splash__logs" ref={logRef}>
+            {logs.length === 0
+              ? 'Waiting for output…'
+              : logs.map((l, i) => `[${l.stage}] ${l.line}`).join('\n')}
+          </pre>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Hook: polls the Rust `bootstrap_status` command every pollMs ms. Returns
+ * the current stage (string) + message. In a non-Tauri context (dev web),
+ * returns 'ready' immediately so the splash never mounts.
+ */
+export function useBootstrapStage(pollMs = 1000) {
+  const [state, setState] = useState({ stage: 'checking', message: null });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') { setState({ stage: 'ready', message: null }); return; }
+    if (!('__TAURI_INTERNALS__' in window)) { setState({ stage: 'ready', message: null }); return; }
+    if (import.meta.env.DEV) { setState({ stage: 'ready', message: null }); return; }
+
+    let cancelled = false;
+    let timer = null;
+    const invoke = async () => {
+      try {
+        const { invoke: tauriInvoke } = await import('@tauri-apps/api/core');
+        return tauriInvoke;
+      } catch {
+        return null;
+      }
+    };
+    (async () => {
+      const tauriInvoke = await invoke();
+      if (!tauriInvoke) { setState({ stage: 'ready', message: null }); return; }
+      const tick = async () => {
+        if (cancelled) return;
+        try {
+          const res = await tauriInvoke('bootstrap_status');
+          if (cancelled) return;
+          // Rust returns { stage: 'ready' } or { stage: 'failed', message: '…' } etc.
+          setState({ stage: res.stage || 'ready', message: res.message || null });
+          if (res.stage !== 'ready' && res.stage !== 'failed') {
+            timer = setTimeout(tick, pollMs);
+          }
+        } catch {
+          setState({ stage: 'ready', message: null });
+        }
+      };
+      tick();
+    })();
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [pollMs]);
+
+  return state;
+}
