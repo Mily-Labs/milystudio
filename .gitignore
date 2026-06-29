@@ -1,0 +1,83 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment files (real values must NEVER be committed)
+.env
+.env.*
+!.env.example
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Tooling caches
+.dyad/
+
+# Python (used by OmniVoice)
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local secrets / runtime junk
+nul
+
+# ---- added for publishing: exclude deps, caches, models, binaries, data ----
+# Python
+.venv/
+venv/
+env/
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# ML model weights / large artifacts
+*.pt
+*.pth
+*.onnx
+*.safetensors
+*.ckpt
+*.gguf
+*.h5
+*.tflite
+*.bin
+
+# Native / packaged binaries
+*.exe
+*.dll
+*.so
+*.dylib
+*.node
+
+# Local data / DBs (may contain real data) 
+*.sqlite
+*.sqlite3
+*.db
+
+# Caches
+.cache/
+.turbo/
+.parcel-cache/

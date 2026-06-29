@@ -1,0 +1,22 @@
+{
+  "name": "milystudio",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "MilyStudio — local media editor monorepo (apps + services + packages)",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,web -c magenta,cyan \"npm --prefix apps/studio-server run dev\" \"npm --prefix apps/studio-web run dev\"",
+    "build": "npm --prefix apps/studio-web run build",
+    "start": "npm --prefix apps/studio-server start",
+    "lint": "npm --prefix apps/studio-web run lint",
+    "typecheck": "npm --prefix apps/studio-web run typecheck && npm --prefix apps/studio-server run typecheck",
+    "install:all": "npm install --no-workspaces && npm --prefix apps/studio-server install && npm --prefix apps/studio-web install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
