@@ -1,0 +1,13 @@
+{
+  "name": "whisper",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Local Whisper ASR subsystem — audio/video → SRT subtitles, fully offline (wraps openai-whisper).",
+  "bin": {
+    "mily-whisper": "cli.mjs"
+  },
+  "scripts": {
+    "transcribe": "node cli.mjs"
+  }
+}
