@@ -1,115 +1,110 @@
+<div align="center">
+
+<img src="docs/logo.png" alt="MilyStudio" width="116" height="116" />
+
 # MilyStudio
 
-> Локальная медиа-студия: видео, голос, motion graphics — в одной панели управления.
-> A local media studio: video, voice, motion graphics — under one control panel.
+**A local, self-hosted creative-AI workspace — video, voice, and motion graphics under one roof.**
+_Локальная медиа-студия: видео, голос и motion graphics в одной панели._
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-[![Node ≥ 20](https://img.shields.io/badge/node-%E2%89%A520-339933)](https://nodejs.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Node ≥ 20](https://img.shields.io/badge/Node-%E2%89%A520-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://react.dev)
+[![SolidJS](https://img.shields.io/badge/SolidJS-2C4F7C?logo=solid&logoColor=white)](https://www.solidjs.com)
+[![Tauri](https://img.shields.io/badge/Tauri-24C8DB?logo=tauri&logoColor=white)](https://tauri.app)
+[![FFmpeg](https://img.shields.io/badge/FFmpeg-007808?logo=ffmpeg&logoColor=white)](https://ffmpeg.org)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
----
-
-## 🇷🇺 Что это
-
-**MilyStudio** — монорепо из четырёх независимых модулей для локальной работы с медиа. Каждый модуль запускается отдельно, а модуль `studio/` поднимает их как подпроцессы и даёт единый веб-интерфейс для управления, логов и API.
-
-| Модуль | Что делает | Стек | Порт |
-| --- | --- | --- | --- |
-| [`ffmpeg/`](./ffmpeg) | Физическая обработка медиа: транскод, субтитры, whisper-воркер | Node.js + `ffmpeg.exe` | — |
-| [`OmniVoice/`](./OmniVoice) | TTS, клонирование голоса, ASR (WhisperX), дубляж | Python + bun + FastAPI | `:3900` |
-| [`text-to-lottie/`](./text-to-lottie) | Генерация и плеер Lottie-анимаций (Bodymovin) | SolidJS + Skia/Skottie | `:3030` |
-| [`studio/`](./studio) | **Оркестратор** — Node control-сервер + React SPA | Node + Express + React/Vite | `:4100` |
-
-Все модули — **MIT**, можно форкать и использовать по отдельности.
+</div>
 
 ---
 
-## 🇬🇧 What is this
+## What is this
 
-**MilyStudio** is a monorepo of four independent modules for local media work. Each module runs on its own; `studio/` orchestrates them as child processes and gives you a single web UI for control, live logs, and API access.
+**MilyStudio** is a monorepo of independent, self-hostable services for media creation —
+AI dubbing & voice, Lottie motion graphics, transcription, and FFmpeg processing — tied
+together by a single orchestrator UI that launches them, streams their logs, and proxies
+their APIs. Everything runs **locally**; each service also works standalone.
 
-| Module | Does | Stack | Port |
-| --- | --- | --- | --- |
-| [`ffmpeg/`](./ffmpeg) | Physical media processing: transcode, subtitles, whisper worker | Node.js + `ffmpeg.exe` | — |
-| [`OmniVoice/`](./OmniVoice) | TTS, voice cloning, ASR (WhisperX), dubbing pipeline | Python + bun + FastAPI | `:3900` |
-| [`text-to-lottie/`](./text-to-lottie) | Lottie animation generation + player (Bodymovin) | SolidJS + Skia/Skottie | `:3030` |
-| [`studio/`](./studio) | **Orchestrator** — Node control server + React SPA | Node + Express + React/Vite | `:4100` |
+| Subsystem | What it does | Stack |
+|---|---|---|
+| [`apps/studio-server`](apps/studio-server) | **Orchestrator** — launches/stops services, live logs, API proxy | Node + Express |
+| [`apps/studio-web`](apps/studio-web) | **Studio UI** — one panel for every subsystem | React + Vite |
+| [`services/omnivoice`](services/omnivoice) | AI **dubbing studio** — TTS, voice cloning, ASR (WhisperX), dubbing pipeline | Python · FastAPI · React · Tauri |
+| [`services/text-to-lottie`](services/text-to-lottie) | **Lottie** generation + Skia/Skottie player (Bodymovin) | SolidJS · CanvasKit-WASM |
+| [`services/whisper`](services/whisper) | Word-level **transcription** worker | Node + Whisper |
+| [`services/ffmpeg-worker`](services/ffmpeg-worker) | Media processing: transcode, scaling, subtitles (`.ass`) | Node + `ffmpeg.exe` |
 
-All modules are **MIT** — fork and use individually.
+It also ships an agent skill in [`.agents/skills/text-to-lottie`](.agents/skills/text-to-lottie)
+— published standalone at **[Mily-Labs/agent-skills](https://github.com/Mily-Labs/agent-skills)**.
 
 ---
 
-## 🚀 Quick Start / Быстрый старт
+## Quick start
 
-### Prerequisites / Зависимости
-
-| Tool | Why | Install |
-| --- | --- | --- |
-| **Node.js ≥ 20** | `ffmpeg/`, `text-to-lottie/`, `studio/` | <https://nodejs.org> |
-| **bun** | `OmniVoice/` runtime | `npm i -g bun` |
-| **uv + Python 3.10+** | `OmniVoice/` (WhisperX, TTS) | `pip install uv` |
-| **ffmpeg.exe** | Should live at `ffmpeg/ffmpeg.exe` (override with `FFMPEG_PATH`) | <https://ffmpeg.org> |
-
-### Install / Установка
+**Prerequisites:** Node ≥ 20. For `services/omnivoice`: Python 3.10+ with [`uv`](https://github.com/astral-sh/uv)
+and [`bun`](https://bun.sh). For FFmpeg work: `ffmpeg` on PATH (or set `FFMPEG_PATH`).
 
 ```bash
-# 1. Subsystems / подсистемы
-npm --prefix ffmpeg install
-npm --prefix text-to-lottie install     # postinstall копирует canvaskit.wasm
+# install the orchestrator + UI workspaces
+npm run install:all
 
-# 2. OmniVoice (one-time)
-cd OmniVoice && uv sync && bun run setup:api && cd ..
-
-# 3. Studio
-npm --prefix studio install
+# dev: orchestrator (:4100) + studio UI (:5174)
+npm run dev
 ```
 
-### Run / Запуск
+Open <http://localhost:5174> → the **Run** tab starts each service; the other tabs drive
+OmniVoice, Lottie, FFmpeg, and a universal API sandbox.
 
 ```bash
-# Dev: orchestrator :4100 + SPA :5174
-npm --prefix studio run dev
-
-# Production: single port :4100 serves both API and built SPA
-npm --prefix studio run build
-npm --prefix studio start
+# production: build the UI, serve everything from the orchestrator on :4100
+npm run build && npm start
 ```
 
-Open <http://localhost:4100> (prod) or <http://localhost:5174> (dev) → in the **Run** tab start `omniVoice` and `lottie`, then explore the other tabs.
-
-Откройте <http://localhost:4100> (prod) или <http://localhost:5174> (dev) → на вкладке **Run** запустите `omniVoice` и `lottie`, дальше — остальные вкладки.
-
----
-
-## 🗺 Port Map / Карта портов
-
-| Port | Service | Started by |
-| --- | --- | --- |
-| `4100` | `studio/` orchestrator (API + prod SPA) | `npm --prefix studio start` |
-| `5174` | `studio/web/` Vite dev server | `npm --prefix studio run dev:web` |
-| `3900` | `OmniVoice/` API | `bun run dev` (from `OmniVoice/`) |
-| `3030` | `text-to-lottie/` dev server | `npm run dev` (from `text-to-lottie/`) |
+Each service can also be run on its own — see its folder's README
+(e.g. [`services/omnivoice/README.md`](services/omnivoice/README.md),
+[`services/text-to-lottie/README.md`](services/text-to-lottie/README.md)).
 
 ---
 
-## 📚 Tabs in `studio/` UI / Вкладки в `studio/`
+## Port map
 
-| Tab | What | Backend |
-| --- | --- | --- |
-| **Run** | Launch / stop / restart any subsystem, live logs | `studio/server` |
-| **OmniVoice** | Generate speech, manage profiles, transcribe, dub | proxied to `:3900` |
-| **Lottie** | Scene tree, current context, JSON edit | proxied to `:3030` |
-| **ffmpeg** | Video info, subtitles, whisper, transcode | `ffmpeg/` helpers |
-| **API Sandbox** | Universal HTTP tester across all backends | direct fetch |
-| **Skills** | Install guides: text-to-lottie skill + OmniVoice MCP | docs |
-
-Полный список эндпоинтов оркестратора — в [`studio/README.md`](./studio/README.md).
+| Port | Service |
+|---|---|
+| `4100` | `apps/studio-server` — orchestrator API (+ prod UI) |
+| `5174` | `apps/studio-web` — Vite dev server |
+| `3030` | `services/text-to-lottie` — Skottie player dev server |
+| `3900` | `services/omnivoice` — dubbing API |
 
 ---
 
-## 🤝 Contributing
+## Repository layout
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md). Issues and PRs welcome.
+```
+milystudio/
+├── apps/
+│   ├── studio-server/     # orchestrator (Express) — launches services, logs, proxy
+│   └── studio-web/        # studio UI (React + Vite)
+├── services/
+│   ├── omnivoice/         # AI dubbing studio (FastAPI backend + React/Tauri frontend)
+│   ├── text-to-lottie/    # Skia/Skottie Lottie player & generator
+│   ├── whisper/           # transcription worker
+│   └── ffmpeg-worker/     # media processing (transcode, subtitles)
+├── packages/              # shared workspace packages
+└── .agents/skills/        # text-to-lottie agent skill (also on Mily-Labs/agent-skills)
+```
 
-## 📜 License
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the design and [AI_RULES.md](AI_RULES.md) for
+the coding conventions used across subsystems.
 
-[MIT](./LICENSE) — Copyright (c) 2026 MilyStudio.
+---
+
+## Contributing
+
+Issues and PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+[MIT](LICENSE) © 2026 MilyStudio.
